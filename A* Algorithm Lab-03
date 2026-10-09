@@ -1,0 +1,100 @@
+
+import heapq
+
+def heuristic(state, goal):
+    return sum(a != b and a != 0
+               for a, b in zip(state, goal))
+
+
+def astar(initial, goal):
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    heap = [(heuristic(initial, goal), 0, initial, [initial])]
+    best = {initial: 0}
+
+    while heap:
+        f, g, state, path = heapq.heappop(heap)
+
+        if state == goal:
+            return path
+
+        if g != best[state]:
+            continue
+
+        pos = state.index(0)
+        r, c = divmod(pos, 3)
+
+        for dr, dc in moves:
+            nr, nc = r + dr, c + dc
+
+            if 0 <= nr < 3 and 0 <= nc < 3:
+                new_pos = nr * 3 + nc
+                new_state = list(state)
+                new_state[pos], new_state[new_pos] = (
+                    new_state[new_pos], new_state[pos]
+                )
+                new_state = tuple(new_state)
+                ng = g + 1
+
+                if ng < best.get(new_state, float("inf")):
+                    best[new_state] = ng
+                    nf = ng + heuristic(new_state, goal)
+                    heapq.heappush(
+                        heap, (nf, ng, new_state, path + [new_state])
+                    )
+
+    return None
+
+
+def display(path, goal):
+    for start in range(0, len(path), 4):
+        states = path[start:start + 4]
+
+        print("   ".join(
+            f"Step {start+i} (h={heuristic(s, goal)})"
+            for i, s in enumerate(states)
+        ))
+
+        for row in range(3):
+            print("   ".join(
+                " ".join("_" if x == 0 else str(x)
+                         for x in s[row*3:row*3+3])
+                for s in states
+            ))
+        print()
+
+
+print("Name: Chethana B")
+print("USN: 1WA24CS095")
+print("=" * 60)
+print("8-PUZZLE PROBLEM USING A* SEARCH")
+print("=" * 60)
+
+initial = (2, 8, 3, 1, 6, 4, 0, 7, 5)
+goal = (1, 2, 3, 8, 0, 4, 7, 6, 5)
+
+print("\nINITIAL STATE:")
+display([initial], goal)
+
+print("GOAL STATE:")
+display([goal], goal)
+
+path = astar(initial, goal)
+
+if path:
+    print("COMPLETE SOLUTION PATH")
+    display(path, goal)
+
+    print("SUMMARY")
+    print("Initial states: 1")
+    print("Goal states: 1")
+    print("Total path states:", len(path))
+    print("Total moves:", len(path) - 1)
+    print("Initial heuristic h(n):", heuristic(initial, goal))
+
+    print("\nFINAL GOAL STATE:")
+    print("1 2 3")
+    print("8 _ 4")
+    print("7 6 5")
+    print("\nGoal reached successfully!")
+else:
+    print("Goal not found!")
