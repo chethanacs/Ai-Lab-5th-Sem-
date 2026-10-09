@@ -1,0 +1,73 @@
+
+def dfs(initial, goal, limit=50):
+    stack = [(initial, [initial])]
+    visited = set()
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    while stack:
+        state, path = stack.pop()
+
+        if state == goal:
+            return path
+        if state in visited:
+            continue
+        visited.add(state)
+
+        if len(path) > limit:
+            continue
+
+        pos = state.index(0)
+        r, c = divmod(pos, 3)
+
+        for dr, dc in moves:
+            nr, nc = r + dr, c + dc
+
+            if 0 <= nr < 3 and 0 <= nc < 3:
+                new_pos = nr * 3 + nc
+                new_state = list(state)
+                new_state[pos], new_state[new_pos] = (
+                    new_state[new_pos], new_state[pos]
+                )
+                new_state = tuple(new_state)
+
+                if new_state not in visited:
+                    stack.append((new_state, path + [new_state]))
+
+    return None
+
+
+def show(path):
+    for start in range(0, len(path), 4):
+        states = path[start:start + 4]
+
+        for row in range(3):
+            print("    ".join(
+                " ".join("_" if x == 0 else str(x)
+                         for x in state[row * 3:row * 3 + 3])
+                for state in states
+            ))
+
+        print("    ".join(
+            f"Step {start + i}" for i in range(len(states))
+        ))
+        print()
+
+
+print("Name: Chethana B")
+print("USN: 1WA24CS095")
+print("=" * 40)
+print("8-PUZZLE PROBLEM USING DFS")
+print("=" * 40)
+
+initial = (1, 2, 3, 0, 4, 6, 7, 5, 8)
+goal = (1, 2, 3, 4, 5, 6, 7, 8, 0)
+
+path = dfs(initial, goal)
+
+if path:
+    print("\nGoal reached!")
+    print("Total moves:", len(path) - 1)
+    print()
+    show(path)
+else:
+    print("Goal not found!")
