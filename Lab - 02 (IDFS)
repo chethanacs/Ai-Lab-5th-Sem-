@@ -1,0 +1,90 @@
+
+def idfs(initial, goal, max_depth=50):
+    moves = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    def dls(state, path, depth, visited):
+        if state == goal:
+            return path
+        if depth == 0:
+            return None
+
+        pos = state.index(0)
+        r, c = divmod(pos, 3)
+
+        for dr, dc in moves:
+            nr, nc = r + dr, c + dc
+
+            if 0 <= nr < 3 and 0 <= nc < 3:
+                new_pos = nr * 3 + nc
+                new_state = list(state)
+                new_state[pos], new_state[new_pos] = (
+                    new_state[new_pos], new_state[pos]
+                )
+                new_state = tuple(new_state)
+
+                if new_state not in visited:
+                    result = dls(
+                        new_state, path + [new_state],
+                        depth - 1, visited | {new_state}
+                    )
+                    if result:
+                        return result
+        return None
+
+    for depth in range(max_depth + 1):
+        result = dls(initial, [initial], depth, {initial})
+        if result:
+            return result
+    return None
+
+
+def show(path):
+    for start in range(0, len(path), 4):
+        states = path[start:start + 4]
+
+        print("Steps:", "       ".join(
+            str(start + i) for i in range(len(states))
+        ))
+
+        for row in range(3):
+            print("   ".join(
+                " ".join(str(x) for x in
+                         state[row * 3:row * 3 + 3])
+                for state in states
+            ))
+        print()
+
+
+print("Name: Chethana B")
+print("USN: 1WA24CS095")
+print("=" * 50)
+print("8-PUZZLE PROBLEM USING IDFS")
+print("=" * 50)
+
+initial = (1, 2, 3, 0, 4, 6, 7, 5, 8)
+goal = (1, 2, 3, 4, 5, 6, 7, 8, 0)
+
+print("\nINITIAL STATE:")
+show([initial])
+
+print("GOAL STATE:")
+show([goal])
+
+path = idfs(initial, goal)
+
+if path:
+    print("SOLUTION PATH:")
+    print("Total moves:", len(path) - 1)
+    show(path)
+
+    print("SUMMARY")
+    print("Initial states: 1")
+    print("Goal states: 1")
+    print("Solution path states:", len(path))
+    print("Moves required:", len(path) - 1)
+    print("\nFINAL GOAL STATE:")
+    print("1 2 3")
+    print("4 5 6")
+    print("7 8 0")
+else:
+    print("Goal not found!")
