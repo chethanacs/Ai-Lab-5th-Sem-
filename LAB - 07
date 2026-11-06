@@ -1,0 +1,107 @@
+
+def is_variable(x):
+    """A variable starts with a lowercase letter."""
+    return isinstance(x, str) and x.islower()
+
+
+def occurs_check(var, term, subst):
+    """Check whether a variable occurs inside a term."""
+    term = apply_substitution(term, subst)
+
+    if var == term:
+        return True
+
+    if isinstance(term, tuple):
+        return any(occurs_check(var, arg, subst) for arg in term[1])
+
+    return False
+
+
+def apply_substitution(term, subst):
+    """Apply substitutions recursively."""
+    if isinstance(term, str):
+        while term in subst:
+            term = subst[term]
+        return term
+
+    if isinstance(term, tuple):
+        predicate, arguments = term
+        return (predicate, tuple(
+            apply_substitution(arg, subst) for arg in arguments
+        ))
+
+    return term
+
+
+def unify(x, y, subst):
+    """Unification algorithm."""
+
+    x = apply_substitution(x, subst)
+    y = apply_substitution(y, subst)
+
+    # Step 1: Identical expressions
+    if x == y:
+        return subst
+
+    # Step 2: Variable substitution
+    if is_variable(x):
+        if occurs_check(x, y, subst):
+            return None
+        subst[x] = y
+        return subst
+
+    if is_variable(y):
+        if occurs_check(y, x, subst):
+            return None
+        subst[y] = x
+        return subst
+
+    # Step 3: Both must be predicates
+    if isinstance(x, tuple) and isinstance(y, tuple):
+
+        # Check predicate symbols
+        if x[0] != y[0]:
+            return None
+
+        # Check number of arguments
+        if len(x[1]) != len(y[1]):
+            return None
+
+        # Step 4: Unify corresponding arguments
+        for a, b in zip(x[1], y[1]):
+            subst = unify(a, b, subst)
+
+            if subst is None:
+                return None
+
+        return subst
+
+    # Step 5: Unification failure
+    return None
+
+
+# Main program
+print("UNIFICATION ALGORITHM")
+print("---------------------")
+
+# Example:
+# Eats(x, Apple)
+# Eats(Riya, y)
+
+expr1 = ("Eats", ("x", "Apple"))
+expr2 = ("Eats", ("Riya", "y"))
+
+print("\nExpression 1:", expr1)
+print("Expression 2:", expr2)
+
+result = unify(expr1, expr2, {})
+
+if result is None:
+    print("\nUnification FAILED")
+else:
+    print("\nUnification SUCCESSFUL")
+    print("Substitution:", result)
+
+    print("\nAfter applying substitutions:")
+    print("Expression 1:", apply_substitution(expr1, result))
+    print("Expression 2:", apply_substitution(expr2, result))
